@@ -1,0 +1,8 @@
+numpy
+Python 3+
+scipy
+keras
+tensorflow
+pydub
+pyaudio
+matplotlib
