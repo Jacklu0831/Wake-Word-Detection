@@ -12,10 +12,9 @@ import matplotlib.mlab as mlab
 from queue import Queue
 from threading import Thread
 
-
 ap = argparse.ArgumentParser()
 ap.add_argument("-th", "--threshold", default=0.5, help="threshold for binary classification")
-ap.add_argument("-m", "--model", default="./model/final_model.h5", help="model path")
+ap.add_argument("-m", "--model", default="./model/general_model.h5", help="model path")
 ap.add_argument("-s", "--silence", default=100, help="magnitude of sound of silence")
 ap.add_argument("-t", "--time", default=60, help="record time in seconds")
 ap.add_argument("-c", "--channels", default=1, help="number of channels")
