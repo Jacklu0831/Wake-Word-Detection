@@ -3,7 +3,6 @@ import pyaudio
 
 import numpy as np
 import time
-import sys
 import os
 import IPython
 import matplotlib.pyplot as plt
@@ -12,7 +11,12 @@ import matplotlib.mlab as mlab
 from queue import Queue
 from threading import Thread
 
-
+# initialize parameters
+model_path = "./model/final_model.h5"
+threshold = 0.8
+silence_threshold = 100
+record_time = 60
+channels = 1
 
 T_x = 5511
 T_y = 1375
@@ -24,14 +28,11 @@ feed_duration = 10   # the total feed length
 chunk_samples = int(fs * chunk_duration)
 feed_samples = int(fs * feed_duration)
 
-
-
 # Load model
 from keras.models import load_model
-model = load_model("./model/final_model.h5")
+model = load_model(model_path)
 
-
-
+# functions 
 def detect_wake_word(spec_data):
     """
     Predict location of wake word
@@ -43,7 +44,7 @@ def detect_wake_word(spec_data):
     preds = preds.reshape(-1)
     return preds # flatten
 
-def is_new_detection(preds, chunk_duration, feed_duration, threshold=0.8):
+def is_new_detection(preds, chunk_duration, feed_duration, threshold=0.5):
     """
     Detects whether a new wake word has been detected in the chunk
     """
@@ -101,14 +102,13 @@ def callback(in_data, frame_count, time_info, status):
 # define and start stream
 que = Queue() # enables communication between audio callback and main thread
 run = True
-threshold = 100
-timeout = time.time() + 60 # half a minute
+timeout = time.time() + record_time # half a minute
 data = np.zeros(feed_samples, dtype='int16') # data buffer for input
 
 run = True
 
 stream = pyaudio.PyAudio().open(format=pyaudio.paInt16,
-                                channels=1,
+                                channels=channels,
                                 rate=fs,
                                 input=True,
                                 frames_per_buffer=chunk_samples,
