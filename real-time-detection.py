@@ -4,6 +4,7 @@ import pyaudio
 import numpy as np
 import time
 import os
+import argparse
 import IPython
 import matplotlib.pyplot as plt
 import matplotlib.mlab as mlab
@@ -11,17 +12,28 @@ import matplotlib.mlab as mlab
 from queue import Queue
 from threading import Thread
 
-# initialize parameters
-model_path = "./model/final_model.h5"
-threshold = 0.8
-silence_threshold = 100
-record_time = 60
-channels = 1
 
+ap = argparse.ArgumentParser()
+ap.add_argument("-th", "--threshold", default=0.5, help="threshold for binary classification")
+ap.add_argument("-m", "--model", default="./model/final_model.h5", help="model path")
+ap.add_argument("-s", "--silence", default=100, help="magnitude of sound of silence")
+ap.add_argument("-t", "--time", default=60, help="record time in seconds")
+ap.add_argument("-c", "--channels", default=1, help="number of channels")
+args = vars(ap.parse_args())
+
+# arg parse data
+model_path = args["model"]
+threshold = args["threshold"]
+silence_threshold = args["silence"]
+record_time = args["time"]
+channels = args["channels"]
+
+# audio parameters
 T_x = 5511
 T_y = 1375
 n_freq = 101
 
+# audio stream parameters
 fs = 44100
 chunk_duration = 0.5 # each read window
 feed_duration = 10   # the total feed length
@@ -36,7 +48,7 @@ model = load_model(model_path)
 def detect_wake_word(spec_data):
     """
     Predict location of wake word
-    note: spec has shape (n_freqs, T_x)
+    note: spec has shape (n_freqs, T_x), we need to swap axes
     """
     spec_data = spec_data.swapaxes(0, 1)
     spec_data = np.expand_dims(spec_data, axis=0)
@@ -44,7 +56,8 @@ def detect_wake_word(spec_data):
     preds = preds.reshape(-1)
     return preds # flatten
 
-def is_new_detection(preds, chunk_duration, feed_duration, threshold=0.5):
+
+def is_new_detection(preds, chunk_duration, feed_duration, threshold):
     """
     Detects whether a new wake word has been detected in the chunk
     """
@@ -61,6 +74,7 @@ def is_new_detection(preds, chunk_duration, feed_duration, threshold=0.5):
             base = pred
     return False
 
+
 def get_spectrogram(audio_data):
     """
     Plot and calculate spectrogram for audio data.
@@ -74,6 +88,7 @@ def get_spectrogram(audio_data):
     elif n_channels == 2:
         pxx, _, _ = mlab.specgram(audio_data[:,0], n_fft, fs, noverlap = n_overlap)
     return pxx
+
 
 # callback for the audio stream data
 def callback(in_data, frame_count, time_info, status):
@@ -94,6 +109,12 @@ def callback(in_data, frame_count, time_info, status):
             que.put(data)
         return (in_data, pyaudio.paContinue)
 
+# task performed upon activation
+def task():
+    print("Stop waking me up, I'm not Siri.")
+    exit()
+
+
 print('\033[H\033[J') # clean console
 print('Start recording...')
 
@@ -102,7 +123,6 @@ que = Queue() # enables communication between audio callback and main thread
 run = True
 timeout = time.time() + record_time # half a minute
 data = np.zeros(feed_samples, dtype='int16') # data buffer for input
-
 run = True
 
 # set up and start stream
@@ -115,25 +135,19 @@ stream = pyaudio.PyAudio().open(format=pyaudio.paInt16,
                                 stream_callback=callback)
 stream.start_stream()
 
-# make sure to stop the stream properly
 try:
     while run:
         data = que.get()
         spec = get_spectrogram(data)
         preds = detect_wake_word(spec)
-        new_wake = is_new_detection(preds, chunk_duration, feed_duration)
+        new_wake = is_new_detection(preds, chunk_duration, feed_duration, threshold)
         if new_wake:
             stream.stop_stream()
             stream.close()
-
             # specify what to do when wake word detected
-            os.system("say stop waking me up, i am not siri")
-            print("Calling external script...\n")
-            os.system("python task.py")
-            exit()
+            task()
             # end of what to do when wake word detected
-
-except (KeyboardInterrupt, SystemExit):
+except:
     stream.stop_stream()
     stream.close()
     timeout = time.time()
@@ -142,4 +156,3 @@ except (KeyboardInterrupt, SystemExit):
 # final clean up
 stream.stop_stream()
 stream.close()
-print()
