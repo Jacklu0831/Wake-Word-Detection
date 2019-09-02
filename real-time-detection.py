@@ -75,20 +75,18 @@ def get_spectrogram(audio_data):
         pxx, _, _ = mlab.specgram(audio_data[:,0], n_fft, fs, noverlap = n_overlap)
     return pxx
 
-
-
-
+# callback for the audio stream data
 def callback(in_data, frame_count, time_info, status):
-    global run, timeout, data, threshold
+    global run, timeout, data
     if time.time() > timeout:
         run = False
     # read new data from buffer and process it
     new_data = np.frombuffer(in_data, dtype='int16')
-    if np.abs(new_data).mean() < threshold:
-        print('0', end='')
+    if np.abs(new_data).mean() < silence_threshold:
+        print('0')
         return (in_data, pyaudio.paContinue)
     else:
-        print('1', end='')
+        print('1')
         # add the new data if not silent
         data = np.append(data, new_data)
         if len(data) > feed_samples:
@@ -96,8 +94,8 @@ def callback(in_data, frame_count, time_info, status):
             que.put(data)
         return (in_data, pyaudio.paContinue)
 
-
-
+print('\033[H\033[J') # clean console
+print('Start recording...')
 
 # define and start stream
 que = Queue() # enables communication between audio callback and main thread
@@ -107,6 +105,7 @@ data = np.zeros(feed_samples, dtype='int16') # data buffer for input
 
 run = True
 
+# set up and start stream
 stream = pyaudio.PyAudio().open(format=pyaudio.paInt16,
                                 channels=channels,
                                 rate=fs,
@@ -116,22 +115,31 @@ stream = pyaudio.PyAudio().open(format=pyaudio.paInt16,
                                 stream_callback=callback)
 stream.start_stream()
 
+# make sure to stop the stream properly
 try:
-	while run:
-		data = que.get()
-		spec = get_spectrogram(data)
-		preds = detect_wake_word(spec)
-		new_wake = is_new_detection(preds, chunk_duration, feed_duration)
-		if new_wake:
-			print('█', end='')
-			os.system("say hello world")
-			stream.stop_stream()
-			stream.close()
+    while run:
+        data = que.get()
+        spec = get_spectrogram(data)
+        preds = detect_wake_word(spec)
+        new_wake = is_new_detection(preds, chunk_duration, feed_duration)
+        if new_wake:
+            stream.stop_stream()
+            stream.close()
+
+            # specify what to do when wake word detected
+            os.system("say stop waking me up, i am not siri")
+            print("Calling external script...\n")
+            os.system("python task.py")
+            exit()
+            # end of what to do when wake word detected
+
 except (KeyboardInterrupt, SystemExit):
     stream.stop_stream()
     stream.close()
     timeout = time.time()
     run = False
 
+# final clean up
 stream.stop_stream()
 stream.close()
+print()
