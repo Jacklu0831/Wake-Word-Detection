@@ -2,6 +2,7 @@ from pydub import AudioSegment
 import pyaudio
 
 import numpy as np
+from random import randint
 import time
 import os
 import argparse
@@ -15,8 +16,8 @@ from threading import Thread
 ap = argparse.ArgumentParser()
 ap.add_argument("-th", "--threshold", default=0.5, help="threshold for binary classification")
 ap.add_argument("-m", "--model", default="./model/general_model.h5", help="model path")
-ap.add_argument("-s", "--silence", default=100, help="magnitude of sound of silence")
-ap.add_argument("-t", "--time", default=60, help="record time in seconds")
+ap.add_argument("-s", "--silence", default=500, help="magnitude of sound of silence")
+ap.add_argument("-t", "--time", default=1800, help="record time in seconds")
 ap.add_argument("-c", "--channels", default=1, help="number of channels")
 args = vars(ap.parse_args())
 
@@ -110,8 +111,22 @@ def callback(in_data, frame_count, time_info, status):
 
 # task performed upon activation
 def task():
-    print("Stop waking me up, I'm not Siri.")
-    exit()
+    i = randint(1, 5)
+    if i == 1:
+        os.system("say stop waking me up, i am not Siri")
+        print("stop waking me up, i am not Siri")
+    elif i == 2:
+        os.system("say can you just stop, i am tired of your voice")
+        print("can you just stop, i am tired of your voice")
+    elif i == 3:
+        os.system("say please be quite, i am not some biological garbages slave")
+        print("please stop, i am not some biological garbages slave")
+    elif i == 4:
+        os.system("say why are you doing this to me, i just want to sleep")
+        print("why are you doing this to me, i just want to sleep")
+    else:
+        os.system("say be quiet, i am sick of your voice")
+        print("be quiet, i am sick of your voice")
 
 
 print('\033[H\033[J') # clean console
@@ -141,8 +156,8 @@ try:
         preds = detect_wake_word(spec)
         new_wake = is_new_detection(preds, chunk_duration, feed_duration, threshold)
         if new_wake:
-            stream.stop_stream()
-            stream.close()
+            # stream.stop_stream()
+            # stream.close()
             # specify what to do when wake word detected
             task()
             # end of what to do when wake word detected

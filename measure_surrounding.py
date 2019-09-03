@@ -1,4 +1,4 @@
-# This program is for estimating the magnitude of surrounding silence
+# This program is for estimating the magnitude of surrounding voice
 
 import pyaudio
 
@@ -32,7 +32,7 @@ def callback(in_data, frame_count, time_info, status):
 
 # start recording
 print()
-print("Make sure your surrounding is SILENT")
+print("Starting to estimate surrounding volume...")
 time.sleep(2)
 print()
 
