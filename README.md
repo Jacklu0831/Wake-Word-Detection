@@ -10,9 +10,9 @@ Detect the word "activate" from audio file or audio stream with deep RNN.
 ## Demo/Result
 
 <p align="center">
-  <a href="https://www.youtube.com/watch?v=C0XLqc06p34"><b>Watch the Result (not cherry picked)</b></a>
+  <a href="https://youtu.be/GQgyfuL00YA"><b>Watch the Result (not cherry picked)</b></a>
   <br>
-  <a href="https://www.youtube.com/watch?v=C0XLqc06p34"><img width="50%" height="50%" src="assets/result.png" title="wake word detection" alt="Video Missing"></a>
+  <a href="https://youtu.be/GQgyfuL00YA"><img width="50%" height="50%" src="assets/result.png" title="wake word detection" alt="Video Missing"></a>
 </p>
 
 ---

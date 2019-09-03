@@ -109,6 +109,7 @@ def callback(in_data, frame_count, time_info, status):
             que.put(data)
         return (in_data, pyaudio.paContinue)
 
+
 # task performed upon activation
 def task():
     i = randint(1, 5)
@@ -134,7 +135,6 @@ print('Start recording...')
 
 # define and start stream
 que = Queue() # enables communication between audio callback and main thread
-run = True
 timeout = time.time() + record_time # half a minute
 data = np.zeros(feed_samples, dtype='int16') # data buffer for input
 run = True
@@ -156,12 +156,9 @@ try:
         preds = detect_wake_word(spec)
         new_wake = is_new_detection(preds, chunk_duration, feed_duration, threshold)
         if new_wake:
-            # stream.stop_stream()
-            # stream.close()
-            # specify what to do when wake word detected
-            task()
-            # end of what to do when wake word detected
-except:
+            task() # specify what to do when wake word detected
+except (KeyboardInterrupt, SystemExit):
+    print("Exiting... Bye.")
     stream.stop_stream()
     stream.close()
     timeout = time.time()
