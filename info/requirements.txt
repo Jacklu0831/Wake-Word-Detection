@@ -1,8 +1,8 @@
 numpy
-Python 3+
+jupyter
 scipy
 keras
-tensorflow
+tensorflow-gpu
 pydub
 pyaudio
 matplotlib
