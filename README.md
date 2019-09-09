@@ -12,9 +12,9 @@ See [resources](#Resources) for the blogs and code fragments that assisted me in
   <a href="https://youtu.be/GQgyfuL00YA"><img width="50%" height="50%" src="assets/result.png" title="wake word detection" alt="Video Missing"></a>
 </p>
 
-## Data (Audio Synthesis)
-
 ---
+
+## Data (Audio Synthesis)
 
 ### Sample Data
 
@@ -36,8 +36,6 @@ Note: batch normalization was used after each layer (both conv and GRU). I also 
 
 As mentioned on the top of this file, the general model did not perform well for me. No matter what threshold I use, the program did not feel robust if I ever want to actually employ it. Therefore, I recorded my own datasets and used my own training data to further train the general model. Finally, I evaluated both models with my custome F1 score function (since Keras took it away for some reason) on my own test data. As expected, `general_model.h5` achieved an average of ~0.28 and `my_model.h5` achieved ~0.85. Needless to say, my own model worked very well for myself (demo).
 
----
-
 ## Try it Yourself
 
 Requirements in `info/requirements.txt`.
@@ -56,8 +54,6 @@ Follow the code/comments in `wake_word_detection.ipynb` for training your own mo
 ### Deploy
 
 Since this project is a terminal program, simply run `python real-time-detection.py` (all command line inputs have default values). Read the file's argparse (top of file) to use a different model, change audio stream time, etc.
-
----
 
 ## Files
 
