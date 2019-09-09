@@ -2,9 +2,7 @@
 
 A terminal program that uses DRNN to detect the wake word "activate" from input audio stream. The program was written in Keras with TensorFlow backend and trained on Google Colab T4 GPU. I used FFmpeg to format the audio files. 
 
-See [Resources](#Resources) for the blogs and code fragments that assisted me in making this project. In the `model` directory, `general_model.h5` was trained on 4000 audio samples from speakers with varied accents and tones. However, maybe it's with my accent or weird background noises, the general model was not robust enough for my use. Therefore, I recorded, formatted, and synthesized my own training data then further trained the general model for my own use. The end result `my_model.h5` was deployed with `real_time_detection.py` and was both qualitatively and quantitatively evaluated. Check out the video below for qualitative demo and the [performance](#Performance) section for quantitative measures of the models.
-
----
+See [resources](#Resources) for the blogs and code fragments that assisted me in making this project. In the `model` directory, `general_model.h5` was trained on 4000 audio samples from speakers with varied accents and tones. However, maybe it's due to my accent or weird background noises, the general model was not accurate enough for me. Therefore, I recorded, formatted, and synthesized my own training data and further trained the general model for my own use. The end result `my_model.h5` was deployed with `real_time_detection.py` and I evaluated qualitatively and quantitatively. Check out the video below for qualitative demo and the [performance](#Performance) section for quantitative measures.
 
 ## Demo/Result
 
@@ -14,9 +12,9 @@ See [Resources](#Resources) for the blogs and code fragments that assisted me in
   <a href="https://youtu.be/GQgyfuL00YA"><img width="50%" height="50%" src="assets/result.png" title="wake word detection" alt="Video Missing"></a>
 </p>
 
----
-
 ## Data (Audio Synthesis)
+
+---
 
 ### Sample Data
 
@@ -24,27 +22,25 @@ All audio files are in 16 bit mono wav format. Directory `input/sample_raw_input
 
 ### My Own Data
 
-I recorded ~15 audio files of myself saying "activate" and ~50 audio files of myself saying some common English words. For the background files, I got them off from [here](http://soundbible.com/tags-background.html). I performed the same preprocessing operations on them and formatted the audio files with the `FFmpeg` software. I synthesized 360 training samples and 90 test samples.
+I recorded ~15 audio files of myself saying "activate" and ~50 audio files of myself saying some common English words. For the background files, I got them off from [here](http://soundbible.com/tags-background.html). I performed the same preprocessing operations on them and formatted the audio files with the `FFmpeg` software. With the pipeline in `preprocess_data.ipynb`, I synthesized 360 training samples and 90 test samples.
 
 ## Model
 
-The model first encodes 5511 timesteps of audio into 1375 timesteps for low-level feature extraction and reducing the amount of data for later layers, this step is critical for running real-time audio detection on limited computing power. Then,the processed timesteps are fed into 2 uni-directional (online detection) GRU layers for extracting high-level audio features and infer whether the wake word has been detected. Lastly, the GRU outputs are connected with time distributed dense layer and signmoid for the classification of each input.
+The model first encodes 5511 timesteps of audio into 1375 timesteps for low-level feature extraction and reducing the amount of data for later layers, this step is critical for running real-time audio detection on limited computing power. Then,the processed timesteps are fed into 2 uni-directional (online detection) GRU layers for extracting high-level audio features and infer whether the wake word has been detected. Lastly, the GRU outputs are connected with a time distributed dense layer and signmoid for the classification.
 
 Note: batch normalization was used after each layer (both conv and GRU). I also heavily used dropout layers (0.8) to combat overfitting.
 
 <p align="center"><img src="assets/model.png" width="60%" height="60%"></p>
 
----
-
 ## Performance
 
-As mentioned on top of this file, the general model did not perform well for me. No matter what threshold I use, the program did not feel robust if I ever want to actually employ it. Therefore, I recorded my own datasets and used my own training data to further train the general model. Finally, I evaluated both models with my custome F1 score function (since Keras took it away for some reason) on my own test data. As expected, `general_model.h5` achieved an average of ~0.28 and `my_model.h5` achieved ~0.85. Needless to say, my own model worked very well for myself (demo).
+As mentioned on the top of this file, the general model did not perform well for me. No matter what threshold I use, the program did not feel robust if I ever want to actually employ it. Therefore, I recorded my own datasets and used my own training data to further train the general model. Finally, I evaluated both models with my custome F1 score function (since Keras took it away for some reason) on my own test data. As expected, `general_model.h5` achieved an average of ~0.28 and `my_model.h5` achieved ~0.85. Needless to say, my own model worked very well for myself (demo).
 
 ---
 
 ## Try it Yourself
 
-Requirements in [`info/requirements.txt`](https://github.com/Jacklu0831/Wake-Word-Detection/blob/master/info/requirements.txt).
+Requirements in `info/requirements.txt`.
 
 ### Make Your Own Data
 
